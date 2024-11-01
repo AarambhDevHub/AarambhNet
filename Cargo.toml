@@ -1,0 +1,22 @@
+[package]
+name = "aarambh-net"
+version = "0.1.0"
+edition = "2021"
+description = "A library for HTTP, TCP, and UDP clients and servers"
+license = "MIT"
+keywords = ["http", "tcp", "udp", "rust"]
+categories = ["Networking", "HTTP", "TCP", "UDP", "Asynchronous"]
+readme = "README.md"
+homepage = "https://github.com/AarambhDevHub/AarambhNet"
+repository = "https://github.com/AarambhDevHub/AarambhNet"
+
+[lib]
+crate-type = ["lib"]
+
+
+[dependencies]
+reqwest = { version = "0.12.9", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
