@@ -14,7 +14,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-aarambh-net = "0.1.0"
+aarambh-net = "0.1.2"
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ aarambh-net = "0.1.0"
         println!("Response: {:?}", response);
     }
 
-### TCP Server Example
+### TCP Server and Client Example
 
     use aarambh_net::tcp::{TcpServer, TcpClient};
 
@@ -69,7 +69,7 @@ aarambh-net = "0.1.0"
         Ok(())
     }
 
-### UDP Client Example
+### UDP Server and Client Example
 
     use aarambh_net::udp::UdpClient;
 
