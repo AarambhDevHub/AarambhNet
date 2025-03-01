@@ -1,7 +1,7 @@
 #[cfg(feature = "logger")]
 use std::fs;
 #[cfg(feature = "logger")]
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::EnvFilter;
 #[cfg(feature = "logger")]
 use tracing_appender::rolling;
 #[cfg(feature = "logger")]
