@@ -1,6 +1,8 @@
 // http.rs
 use reqwest::{header::HeaderMap, Client, Response, Url};
 use std::error::Error;
+#[cfg(feature = "logger")]
+use tracing::info;
 
 /// The `HttpClient` struct in Rust represents an HTTP client with a base URL, optional default headers,
 /// and a client instance.
@@ -45,6 +47,8 @@ impl HttpClient {
     /// parsing is successful and the `HttpClient` struct is properly initialized with the provided base
     /// URL, default headers, and a new `Client` instance.
     pub fn new(base_url: &str, default_headers: Option<HeaderMap>) -> Result<Self, Box<dyn Error>> {
+        #[cfg(feature = "logger")]
+        info!("Initializing HttpClient with base URL: {}", base_url);
         Ok(HttpClient {
             base_url: Url::parse(base_url)?,
             default_headers,
@@ -70,6 +74,8 @@ impl HttpClient {
                 merged_headers.insert(key.clone(), value.clone());
             }
         }
+        #[cfg(feature = "logger")]
+        info!("Merged headers: {:?}", merged_headers);
         merged_headers
     }
 
@@ -91,6 +97,8 @@ impl HttpClient {
     /// `Box<dyn Error>` if an error occurs during the request.
     pub async fn get(&self, endpoint: &str, headers: Option<HeaderMap>) -> Result<Response, Box<dyn Error>> {
         let url = self.base_url.join(endpoint)?;
+        #[cfg(feature = "logger")]
+        info!("Sending GET request to {}", url);
         let merged_headers = self.merge_headers(headers);
         let response = self.client.get(url).headers(merged_headers).send().await?;
         Ok(response)
@@ -117,6 +125,8 @@ impl HttpClient {
     /// or a `Box` containing a dynamic error trait object if an error occurs.
     pub async fn post(&self, endpoint: &str, headers: Option<HeaderMap>, body: Option<&str>) -> Result<Response, Box<dyn Error>> {
         let url = self.base_url.join(endpoint)?;
+        #[cfg(feature = "logger")]
+        info!("Sending POST request to {}", url);
         let merged_headers = self.merge_headers(headers);
         let mut request = self.client.post(url).headers(merged_headers);
 
@@ -150,6 +160,8 @@ impl HttpClient {
     /// a `Box` containing a trait object that implements the `Error` trait if an error occurs.
     pub async fn put(&self, endpoint: &str, headers: Option<HeaderMap>, body: Option<&str>) -> Result<Response, Box<dyn Error>> {
         let url = self.base_url.join(endpoint)?;
+        #[cfg(feature = "logger")]
+        info!("Sending PUT request to {}", url);
         let merged_headers = self.merge_headers(headers);
         let mut request = self.client.put(url).headers(merged_headers);
 
@@ -179,6 +191,8 @@ impl HttpClient {
     /// or a `Box<dyn Error>` if an error occurs.
     pub async fn delete(&self, endpoint: &str, headers: Option<HeaderMap>) -> Result<Response, Box<dyn Error>> {
         let url = self.base_url.join(endpoint)?;
+        #[cfg(feature = "logger")]
+        info!("Sending DELETE request to {}", url);
         let merged_headers = self.merge_headers(headers);
         let response = self.client.delete(url).headers(merged_headers).send().await?;
         Ok(response)
@@ -202,6 +216,8 @@ impl HttpClient {
     /// or a `Box<dyn Error>` if an error occurs.
     pub async fn head(&self, endpoint: &str, headers: Option<HeaderMap>) -> Result<Response, Box<dyn Error>> {
         let url = self.base_url.join(endpoint)?;
+        #[cfg(feature = "logger")]
+        info!("Sending HEAD request to {}", url);
         let merged_headers = self.merge_headers(headers);
         let response = self.client.head(url).headers(merged_headers).send().await?;
         Ok(response)
@@ -228,6 +244,8 @@ impl HttpClient {
     /// implementing the `Error` trait.
     pub async fn patch(&self, endpoint: &str, headers: Option<HeaderMap>, body: Option<&str>) -> Result<Response, Box<dyn Error>> {
         let url = self.base_url.join(endpoint)?;
+        #[cfg(feature = "logger")]
+        info!("Sending PATCH request to {}", url);
         let merged_headers = self.merge_headers(headers);
         let mut request = self.client.patch(url).headers(merged_headers);
 

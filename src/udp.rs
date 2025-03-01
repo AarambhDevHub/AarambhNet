@@ -1,6 +1,8 @@
 use std::{error::Error, sync::Arc};
 use tokio::{net::UdpSocket, sync::Notify};
 
+#[cfg(feature = "logger")]
+use tracing::{info, error, warn};
 /// The `UdpServer` struct in Rust contains a UDP socket and an Arc-wrapped notification mechanism.
 /// 
 /// # Properties:
@@ -33,6 +35,9 @@ impl UdpServer {
     pub async fn bind(addr: &str) -> Result<Self, Box<dyn Error>> {
         let socket = UdpSocket::bind(addr).await?;
         let notify = Arc::new(Notify::new());
+
+        #[cfg(feature = "logger")]
+        info!("UDP server bound to {}", addr);
         Ok(UdpServer { socket, notify })
     }
 
@@ -51,23 +56,27 @@ impl UdpServer {
     /// successfully.
     pub async fn run(self: Arc<Self>) -> Result<(), Box<dyn Error>> {
         let mut buf = [0; 1024]; // Buffer to store incoming data
-
+        #[cfg(feature = "logger")]
+        info!("UDP server is running...");
         loop {
             tokio::select! {
                 // Wait for incoming data
                 Ok((len, addr)) = self.socket.recv_from(&mut buf) => {
                     // Process the incoming data
                     let received_message = String::from_utf8_lossy(&buf[..len]);
-                    println!("Received from {}: {}", addr, received_message);
+                    #[cfg(feature = "logger")]
+                    info!("Received from {}: {}", addr, received_message);
 
                     // Echo the message back to the sender
                     if let Err(e) = self.socket.send_to(&buf[..len], addr).await {
-                        eprintln!("Failed to send data: {}", e);
+                        #[cfg(feature = "logger")]
+                        error!("Failed to send data: {}", e);
                     }
                 },
                 // Check for shutdown signal
                 _ = self.notify.notified() => {
-                    println!("Shutting down the UDP server...");
+                    #[cfg(feature = "logger")]
+                    warn!("Shutting down the UDP server...");
                     return Ok(()); // Exit the loop if notified
                 }
             }
@@ -76,6 +85,8 @@ impl UdpServer {
 
     /// The `shutdown` function in Rust asynchronously notifies the server to shut down.
     pub async fn shutdown(&self) {
+        #[cfg(feature = "logger")]
+        warn!("Shutdown signal received.");
         self.notify.notify_one(); // Notify the server to shut down
     }
 }

@@ -3,6 +3,8 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpListener, sync::Notify,
 };
+#[cfg(feature = "logger")]
+use tracing::{info, error, warn};
 
 /// The `TcpServer` struct represents a TCP server with a listener and a notification mechanism.
 /// 
@@ -33,8 +35,12 @@ impl TcpServer {
     /// The `bind` function returns a `Result` containing an instance of `TcpServer` if the operation is
     /// successful, or a boxed `dyn Error` trait object if an error occurs during the process.
     pub async fn bind(addr: &str) -> Result<Self, Box<dyn Error>> {
+        #[cfg(feature = "logger")]
+        info!("Binding server to {}", addr);
         let listener = TcpListener::bind(addr).await?;
         let notify = Arc::new(Notify::new());
+        #[cfg(feature = "logger")]
+        info!("Server successfully bound to {}", addr);
         Ok(TcpServer { listener, notify })
     }
 
@@ -46,9 +52,13 @@ impl TcpServer {
     /// The `run` function is returning a `Result` with an empty tuple `()` on success or a `Box`
     /// containing any type that implements the `Error` trait on failure.
     pub async fn run(&self) -> Result<(), Box<dyn Error>> {
+        #[cfg(feature = "logger")]
+        info!("Server is running...");
         loop {
             tokio::select! {
-                Ok((mut socket, _)) = self.listener.accept() => {
+                Ok((mut socket, addr)) = self.listener.accept() => {
+                    #[cfg(feature = "logger")]
+                    info!("New connection accepted from {}", addr);
                     let notify = self.notify.clone();
                     tokio::spawn(async move {
                         let mut buffer = vec![0; 1024]; // Buffer to read data
@@ -56,23 +66,39 @@ impl TcpServer {
                             tokio::select! {
                                 result = socket.read(&mut buffer) => {
                                     match result {
-                                        Ok(0) => return, // Connection closed
+                                        Ok(0) => {
+                                            #[cfg(feature = "logger")]
+                                            warn!("Client {} disconnected.", addr);
+
+                                            return
+                                        }, // Connection closed
                                         Ok(n) => {
+                                            let msg = String::from_utf8_lossy(&buffer[..n]);
+                                            #[cfg(feature = "logger")]
+                                            info!("Received from {}: {}", addr, msg);
+
                                             // Echo the message back
                                             if let Err(e) = socket.write_all(&buffer[..n]).await {
-                                                eprintln!("Failed to write to socket: {}", e);
+                                                #[cfg(feature = "logger")]
+                                                error!("Failed to write to {}: {}", addr, e);
                                                 return;
                                             }
+
+                                            #[cfg(feature = "logger")]
+                                            info!("Message echoed back to {}", addr);
                                         }
-                                        Err(_) => {
-                                            eprintln!("Failed to read from socket");
+                                        Err(e) => {
+                                            #[cfg(feature = "logger")]
+                                            error!("Failed to read from {}: {}", addr, e);
                                             return;
+
                                         }
                                     }
                                 },
                                 // Check for shutdown signal
                                 _ = notify.notified() => {
-                                    println!("Shutting down the server...");
+                                    #[cfg(feature = "logger")]
+                                    info!("Shutdown signal received. Closing server.");
                                     return; // Exit the loop if notified
                                 }
                             }
@@ -86,6 +112,9 @@ impl TcpServer {
 
     /// The `shutdown` function in Rust asynchronously notifies one waiting task to shut down.
     pub async fn shutdown(&self) {
+        #[cfg(feature = "logger")]
+        info!("Server is shutting down...");
+
         self.notify.notify_one();
     }
 

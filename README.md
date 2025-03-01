@@ -7,6 +7,7 @@ AarambhNet is a Rust library providing networking capabilities with HTTP, TCP, a
 - **HTTP Client**: Easily make HTTP requests with support for custom headers and endpoints.
 - **TCP Server/Client**: Set up TCP servers and clients to handle connection-based communication.
 - **UDP Server/Client**: Implement lightweight UDP communication for fast, connectionless data transfer.
+- 
 
 ## Installation
 
@@ -14,7 +15,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-aarambh-net = "0.1.2"
+aarambh-net = "0.1.3"
 ```
 
 ## Usage
