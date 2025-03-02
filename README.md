@@ -15,7 +15,7 @@ Add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-aarambh-net = "0.1.3"
+aarambh-net = "0.1.4"
 ```
 
 ## Usage
